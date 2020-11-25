@@ -30,3 +30,9 @@
 *.exe
 *.out
 *.app
+
+# Added stuff
+.vscode/
+RayTracer
+# Add this later when things look good
+output.ppm
