@@ -2,7 +2,7 @@
 # 	g++ -o raytracer main.cpp vec3.h -I .
 CFLAGS = -O
 CC = g++
-SRC = main.cpp vec3.h ray.h hitable.h sphere.h hitable_list.h camera.h
+SRC = main.cpp vec3.h ray.h hitable.h sphere.h hitable_list.h camera.h material.h
 OBJ = $(SRC:.cpp = .o)
 RayTracer: $(OBJ)
 	$(CC) $(CFLAGS) -o RayTracer $(OBJ)
