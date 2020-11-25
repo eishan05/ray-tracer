@@ -18,6 +18,12 @@
 using std::sqrt;
 using std::fabs;
 
+double random_double(double fMin = 0, double fMax = 100)
+{
+    double f = (double)rand() / RAND_MAX;
+    return fMin + f * (fMax - fMin);
+}
+
 class vec3 {
     public:
         vec3() : e{0,0,0} {}
