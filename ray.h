@@ -19,7 +19,7 @@ class ray {
         return B;
     }
 
-    vec3 point_at_paramter(float t) const {
+    vec3 point_at_parameter(float t) const {
         return A + t*B;
     }
 
