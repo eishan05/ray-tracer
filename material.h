@@ -25,16 +25,23 @@ class lambertian: public material {
 
 class metal: public material {
     public:
-    metal(const vec3& a) : albedo(a) {}
+    metal(const vec3& a, float f) : albedo(a) {
+        if (f > 1) {
+            fuzz = 1;
+        } else {
+            fuzz = f;
+        }
+    }
     
     virtual bool scatter(const ray& r_in, const hit_record& rec, vec3& attenuation, ray& scattered) const override {
         vec3 reflected = reflect(unit_vector(r_in.direction()), rec.normal);
-        scattered = ray(rec.p, reflected);
+        scattered = ray(rec.p, reflected + fuzz * random_in_unit_sphere());
         attenuation = albedo;
         return dot(scattered.direction(), rec.normal) > 0;
     }
 
     vec3 albedo;
+    float fuzz;
 };
 
 #endif
