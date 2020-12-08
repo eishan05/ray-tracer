@@ -129,6 +129,14 @@ inline vec3 cross(const vec3 &u, const vec3 &v) {
                 u.e[0] * v.e[1] - u.e[1] * v.e[0]);
 }
 
+inline double area_triangle(const vec3 &p1, const vec3 &p2, const vec3& p3) {
+    return cross(p2 - p1, p3 - p1).length();
+}
+
+inline bool point_inside_triangle(const vec3& p1, const vec3& p2, const vec3& p3, const vec3& p) {
+    return abs(1.0 - (area_triangle(p1, p2, p) / area_triangle(p1, p2, p3) + area_triangle(p1, p3, p) / area_triangle(p1, p2, p3) + area_triangle(p2, p3, p) / area_triangle(p1, p2, p3))) < 1e-8;
+}
+
 inline vec3 unit_vector(vec3 v) {
     return v / v.length();
 }

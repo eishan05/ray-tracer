@@ -11,7 +11,7 @@ class triangle: public hitable {
         p1 = a;
         p2 = b;
         p3 = c;
-        normal = unit_vector(cross(b - a, c - a));
+        normal = -unit_vector(cross(b - a, c - a));
         material_ptr = ptr;
     }
 
@@ -26,21 +26,18 @@ class triangle: public hitable {
 };
 
 bool triangle::hit(const ray& r, float tmin, float tmax, hit_record& rec) const {
-    vec3 w = p1 - r.origin();
-    double a = dot(w, normal);
-    double b = dot(normal, r.direction());
-    vec3 intersection_point = r.direction() * (a / b) + r.origin();
-    double area_triangle = 0.5 * (cross(p2 - p1, p3 - p1).length());
-    double a1 = 0.5 * (cross(p1 - intersection_point, p2 - intersection_point).length());
-    double a2 = 0.5 * (cross(p2 - intersection_point, p3 - intersection_point).length());
-    double a3 = 0.5 * (cross(p3 - intersection_point, p1 - intersection_point).length());
-    if (abs(area_triangle - (a1 + a2 + a3)) > 1e-4 || (a / b) >= tmax || (a / b) <= tmin) {
+    // vec3 w = p1 - r.origin();
+    // double a = dot(w, normal);
+    // double b = dot(normal, r.direction());
+    double t = (dot(normal, p1) - dot(normal, r.origin())) / dot(normal, r.direction());
+    vec3 intersection_point = r.point_at_parameter(t);
+    if (abs(dot(r.direction(), normal)) < 1e-4 || !point_inside_triangle(p1, p2, p3, intersection_point) || t >= tmax || t <= tmin) {
         return false;
     }
     rec.mat_ptr = material_ptr;
     rec.normal = normal;
     rec.p = intersection_point;
-    rec.t = (a / b);
+    rec.t = t;
     return true;
 }
 
