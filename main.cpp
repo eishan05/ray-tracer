@@ -6,6 +6,7 @@
 #include "camera.h"
 #include "light.h"
 #include "triangle.h"
+#include "box.h"
 
 light light_source;
 
@@ -14,24 +15,24 @@ hitable *random_scene() {
     hitable **list = new hitable*[n + 1];
     list[0] = new sphere(vec3(0, -1000, 0), 1000, new lambertian(vec3(0.5, 0.5, 0.5)));
     int i = 1;
-    // for (int a = -11; a < 11; ++a) {
-    //     for (int b = -11; b < 11; ++b) {
-    //         float choose_mat = drand48();
-    //         vec3 center(a + 0.9 * drand48(), 0.2, b + 0.9 * drand48());
-    //         if ((center - vec3(4, 0.2, 0)).length() > 0.9) {
-    //             if (choose_mat < 0.8) {
-    //                 // diffuse
-    //                 list[i++] = new sphere(center, 0.2, new lambertian(vec3(drand48() * drand48(), drand48() * drand48(), drand48() * drand48())));
-    //             } else if (choose_mat < 0.95) {
-    //                 // metal
-    //                 list[i++] = new sphere(center, 0.2, new metal(vec3(0.5 * (1 + drand48()), 0.5 * (1 + drand48()), 0.5 * (1 + drand48())), 0.5 * drand48()));
-    //             } else {
-    //                 // glass
-    //                 list[i++] = new sphere(center, 0.2, new dielectric(1.5));
-    //             }
-    //         }
-    //     }
-    // }
+    for (int a = -11; a < 11; ++a) {
+        for (int b = -11; b < 11; ++b) {
+            float choose_mat = drand48();
+            vec3 center(a + 0.9 * drand48(), 0.2, b + 0.9 * drand48());
+            if ((center - vec3(4, 0.2, 0)).length() > 0.9) {
+                if (choose_mat < 0.8) {
+                    // diffuse
+                    list[i++] = new sphere(center, 0.2, new lambertian(vec3(drand48() * drand48(), drand48() * drand48(), drand48() * drand48())));
+                } else if (choose_mat < 0.95) {
+                    // metal
+                    list[i++] = new sphere(center, 0.2, new metal(vec3(0.5 * (1 + drand48()), 0.5 * (1 + drand48()), 0.5 * (1 + drand48())), 0.5 * drand48()));
+                } else {
+                    // glass
+                    list[i++] = new sphere(center, 0.2, new dielectric(1.5));
+                }
+            }
+        }
+    }
     light_source.directional = true;
     light_source.direction = unit_vector(vec3(0, 1, 1) - vec3(0, 0, 0));
     light_source.light_color = vec3(1.0, 1.0, 1.0);
@@ -39,7 +40,11 @@ hitable *random_scene() {
     list[i++] = new sphere(vec3(0, 1, 0), 1.0, new dielectric(1.5));
     list[i++] = new sphere(vec3(-4, 1, 0), 1.0, new lambertian(vec3(0.4, 0.2, 0.1)));
     // list[i++] = new sphere(vec3(4, 1, 0), 1.0, new metal(vec3(0.7, 0.6, 0.5), 0.0));
-    list[i++] = new triangle(vec3(4, 1, 0), vec3(4, 0, 0), vec3(4, 0, 1), new metal(vec3(0.7, 0.6, 0.5), 0.0));
+    // list[i++] = new triangle(vec3(4, 2, 0), vec3(4, 0, 1), vec3(4, 0, -1), new metal(vec3(0.7, 0.6, 0.5), 0.0));
+    box* b = new box(vec3(-1, -1, -1), vec3(1, -1, -1), vec3(1, 1, -1), vec3(-1, 1, -1), vec3(-1, -1, 1), vec3(1, -1, 1), vec3(1,1, 1), vec3(-1, 1, 1), new lambertian(vec3(0.4, 0.2, 0.1)));
+    b->translate(vec3(3, 0, 0));
+    list[i++] = b;
+    // list[i++] = new rectangle(vec3(4, 2, 1), vec3(4, 0, 1), vec3(4, 0, -1), vec3(4, 2, -1), new metal(vec3(0.7, 0.6, 0.5), 0.0));
 
     return new hitable_list(list, i);
 }

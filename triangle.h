@@ -7,6 +7,7 @@
 class triangle: public hitable {
     public:
     triangle() {}
+    // Should be counter clockwise
     triangle(vec3 a, vec3 b, vec3 c, material* ptr) {
         p1 = a;
         p2 = b;
@@ -16,6 +17,11 @@ class triangle: public hitable {
 
     virtual bool hit(const ray& r, float tmin, float tmax, hit_record& rec) const;
 
+    void translate(const vec3& translation) {
+        p1 = p1 + translation;
+        p2 = p2 + translation;
+        p3 = p3 + translation;
+    }
 
     vec3 p1;
     vec3 p2;
@@ -80,7 +86,7 @@ bool triangle::hit(const ray& r, float tmin, float tmax, hit_record& rec) const 
     }
     
     rec.t = t;
-    rec.normal = -unit_vector(N);
+    rec.normal = unit_vector(N);
     rec.mat_ptr = material_ptr;
     rec.p = intersection;
     return true;
