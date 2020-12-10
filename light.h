@@ -8,6 +8,7 @@ struct light {
     vec3 point;
     vec3 direction;
     vec3 light_color;
+    vec3 view_vector;
     double light_intensity;
 };
 

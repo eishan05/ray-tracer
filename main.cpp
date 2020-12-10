@@ -13,7 +13,7 @@ light light_source;
 hitable *random_scene() {
     int n = 500;
     hitable **list = new hitable*[n + 1];
-    list[0] = new sphere(vec3(0, -1000, 0), 1000, new lambertian(vec3(0.5, 0.5, 0.5)));
+    list[0] = new sphere(vec3(0, -1000, 0), 1000, new metal(vec3(0.7, 0.6, 0.5), 0.0)/*new lambertian(vec3(0.5, 0.5, 0.5))*/);
     int i = 1;
     for (int a = -11; a < 11; ++a) {
         for (int b = -11; b < 11; ++b) {
@@ -33,17 +33,21 @@ hitable *random_scene() {
             }
         }
     }
-    light_source.directional = true;
-    light_source.direction = unit_vector(vec3(0, 1, 1) - vec3(0, 0, 0));
+    point3 lookfrom(13,2,3);
+    point3 lookat(0,0,0);
+    light_source.directional = false;
+    light_source.point = 6.0 * vec3(1, 1, 1);
+    // light_source.direction = unit_vector(vec3(0, 0, 0) - vec3(1, 1, 1));
     light_source.light_color = vec3(1.0, 1.0, 1.0);
     light_source.light_intensity = 0.80;
-    list[i++] = new sphere(vec3(0, 1, 0), 1.0, new dielectric(1.5));
-    list[i++] = new sphere(vec3(-4, 1, 0), 1.0, new lambertian(vec3(0.4, 0.2, 0.1)));
+    light_source.view_vector = lookat - lookfrom;
+    list[i++] = new sphere(vec3(-4, 1, 0), 1.0, new dielectric(1.5));
+    list[i++] = new sphere(vec3(0, 1, 0), 1.0, new lambertian(vec3(0.4, 0.2, 0.1)));
     // list[i++] = new sphere(vec3(4, 1, 0), 1.0, new metal(vec3(0.7, 0.6, 0.5), 0.0));
     // list[i++] = new triangle(vec3(4, 2, 0), vec3(4, 0, 1), vec3(4, 0, -1), new metal(vec3(0.7, 0.6, 0.5), 0.0));
     box* b = new box(vec3(-1, -1, -1), vec3(1, -1, -1), vec3(1, 1, -1), vec3(-1, 1, -1), vec3(-1, -1, 1), vec3(1, -1, 1), vec3(1,1, 1), vec3(-1, 1, 1), new lambertian(vec3(0.4, 0.2, 0.1)));
     b->translate(vec3(3, 0, 0));
-    list[i++] = b;
+    // list[i++] = b;
     // list[i++] = new rectangle(vec3(4, 2, 1), vec3(4, 0, 1), vec3(4, 0, -1), vec3(4, 2, -1), new metal(vec3(0.7, 0.6, 0.5), 0.0));
 
     return new hitable_list(list, i);
@@ -54,9 +58,23 @@ vec3 calculateColor(const ray& r, hitable* world, int depth) {
     if (world->hit(r, 0.001, MAXFLOAT, rec)) {
         ray scattered;
         vec3 attenuation;
-        if (depth < 50 && rec.mat_ptr->scatter(r, rec, attenuation, scattered)) {
-            // Calculate the diffuse color at the point that is hit
-            // vec3 diffuse = light_source.light_intensity * std::max(0.0, dot(light_source.direction, rec.normal)) * light_source.light_color;
+        if (depth < 50 && rec.mat_ptr->scatter(r, rec, attenuation, scattered, light_source)) {
+            
+            // Check if the point is lying in shadow regions
+            hit_record dummy_rec;
+            vec3 direction_to_light;
+            if (light_source.directional) {
+                direction_to_light = -light_source.direction;
+            } else {
+                direction_to_light = unit_vector(light_source.point - rec.p);
+            }
+            ray ray_to_light(rec.p, direction_to_light);
+            if (world->hit(ray_to_light, 0.001, MAXFLOAT, dummy_rec)) {
+                // If light is indeed blocked, we reduce the object's color to make it appear darker
+                return attenuation / 20.0;
+            }
+            // Shadow implementation ends
+
             return attenuation*calculateColor(scattered, world, depth + 1);
         } else {
             return vec3(0.0, 0.0, 0.0);

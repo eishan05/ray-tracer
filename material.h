@@ -3,10 +3,11 @@
 
 #include "ray.h"
 #include "hitable.h"
+#include "light.h"
 
 class material {
     public:
-        virtual bool scatter(const ray& r_in, const hit_record& rec, vec3& attenuation, ray& scattered) const = 0;
+        virtual bool scatter(const ray& r_in, const hit_record& rec, vec3& attenuation, ray& scattered, const light& light_source) const = 0;
 };
 
 bool dielectric_refract(const vec3 v, const vec3& n, float ni_over_nt, vec3& refracted) {
@@ -25,10 +26,24 @@ class lambertian: public material {
     public:
         lambertian(const vec3& a) :albedo(a) {}
 
-        virtual bool scatter(const ray& r_in, const hit_record& rec, vec3& attenuation, ray& scattered) const override {
+        virtual bool scatter(const ray& r_in, const hit_record& rec, vec3& attenuation, ray& scattered, const light& light_source) const override {
             vec3 target = rec.p + rec.normal + random_in_unit_sphere();
             scattered = ray(rec.p, target - rec.p);
-            attenuation = albedo;
+            vec3 l_direction;
+            if (light_source.directional) {
+                l_direction = -light_source.direction;
+            } else {
+                l_direction = unit_vector(light_source.point - rec.p);
+            }
+            double NLAngle = std::max(dot(l_direction, rec.normal), 0.0);
+            double specular = 0.0;
+            if (NLAngle > 0.0) {
+                vec3 viewVector = unit_vector(-light_source.view_vector);
+                vec3 half_vector = (l_direction + viewVector) / 2.0;
+                double specAngle = std::max(dot(rec.normal, half_vector), 0.0);
+                specular = std::pow(specAngle, 5.0);
+            }
+            attenuation = albedo * NLAngle + 2.3 * specular * light_source.light_color + albedo;
             return true;
         }
     
@@ -45,7 +60,7 @@ class metal: public material {
         }
     }
     
-    virtual bool scatter(const ray& r_in, const hit_record& rec, vec3& attenuation, ray& scattered) const override {
+    virtual bool scatter(const ray& r_in, const hit_record& rec, vec3& attenuation, ray& scattered, const light& light_source) const override {
         vec3 reflected = reflect(unit_vector(r_in.direction()), rec.normal);
         scattered = ray(rec.p, reflected + fuzz * random_in_unit_sphere());
         attenuation = albedo;
@@ -60,7 +75,7 @@ class dielectric : public material {
     public:
         dielectric(float ri) : ref_idx(ri) {}
 
-        virtual bool scatter(const ray& r_in, const hit_record& rec, vec3& attenuation, ray& scattered) const override {
+        virtual bool scatter(const ray& r_in, const hit_record& rec, vec3& attenuation, ray& scattered, const light& light_source) const override {
             vec3 outward_normal;
             vec3 reflected = reflect(r_in.direction(), rec.normal);
             float ni_over_nt;

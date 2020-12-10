@@ -30,6 +30,7 @@ class triangle: public hitable {
 };
 
 bool triangle::hit(const ray& r, float tmin, float tmax, hit_record& rec) const {
+    // referenced from https://stackoverflow.com/questions/31178874/how-to-get-the-intersection-point-ray-triangle-intersection-c
     // compute plane normal
     vec3 p1p2 = p2 - p1;
     vec3 p1p3 = p3 - p1;
